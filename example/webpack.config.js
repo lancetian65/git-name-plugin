@@ -1,17 +1,17 @@
-var path = require("path");
-const GitNamePlugin = require("git-name-plugin");
+var path = require('path');
+const GitNamePlugin = require('git-name-plugin');
 module.exports = {
-	// mode: "development || "production",
-	entry: {
-		main: "./example"
-	},
-	optimization: {
-		runtimeChunk: true
-	},
-	plugins: [new GitNamePlugin()],
-	output: {
-		path: path.join(__dirname, "dist"),
-		filename: "[name].chunkhash.js",
-		chunkFilename: "[name].chunkhash.js"
-	}
+  // mode: "development || "production",
+  entry: {
+    main: './example',
+  },
+  optimization: {
+    runtimeChunk: true,
+  },
+  plugins: [new GitNamePlugin({ envs: ['dev', 'test', 'prod', 'master'] })],
+  output: {
+    path: path.join(__dirname, 'dist'),
+    filename: '[name].chunkhash.js',
+    chunkFilename: '[name].chunkhash.js',
+  },
 };

@@ -1,3 +1,2 @@
 // some module
-import("./async1");
-import("./async2");
+console.log('ENV',ENV);

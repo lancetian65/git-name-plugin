@@ -17,12 +17,16 @@ class GitNamePlugin {
   }
   apply(compiler) {
     compiler.hooks.thisCompilation.tap('GitNamePlugin', (compilation) => {
-      const currentHead = fs.existsSync(
-        path.join(fs.realpathSync(process.cwd()), '.git/HEAD')
+      const currentHeadPath = path.join(
+        fs.realpathSync(process.cwd()),
+        '.git/HEAD'
       );
-      const prevHead = fs.existsSync(
-        path.join(fs.realpathSync(process.cwd()), '../git/HEAD')
+      const prevHeadPath = path.join(
+        fs.realpathSync(process.cwd()),
+        '../.git/HEAD'
       );
+      const currentHead = fs.existsSync(currentHeadPath);
+      const prevHead = fs.existsSync(prevHeadPath);
 
       if (!prevHead && !currentHead) {
         new WebpackError(
@@ -31,20 +35,20 @@ class GitNamePlugin {
       }
       try {
         const gitPath = currentHead
-          ? fs.readFileSync(
-              path.join(fs.realpathSync(process.cwd()), '.git/HEAD'),
-              'utf-8'
-            )
-          : fs.readFileSync(
-              path.join(fs.realpathSync(process.cwd()), '../.git/HEAD'),
-              'utf-8'
-            );
+          ? fs.readFileSync(currentHeadPath, 'utf-8')
+          : fs.readFileSync(prevHeadPath, 'utf-8');
         const gitHEAD = gitPath.trim();
-        const environment = gitHEAD.split('/')[2];
-        if (this.envs.includes(environment)) {
-          new DefinePlugin({ ENV: JSON.stringify(environment) }).apply(
-            compiler
-          );
+        const gitBranchName = gitHEAD.split('/')[2];
+        let env;
+        this.envs.forEach((value) => {
+          if (new RegExp(value).test(gitBranchName)) {
+            env = value;
+          }
+        });
+        if (env) {
+          new DefinePlugin({ ENV: JSON.stringify(env) }).apply(compiler);
+        } else {
+          new WebpackError('GitNamePlugin: no branch name equal to envs');
         }
       } catch (error) {
         compilation.errors.push(
